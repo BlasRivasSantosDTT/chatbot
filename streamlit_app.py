@@ -1,60 +1,86 @@
 import streamlit as st
 from openai import OpenAI
+from PIL import Image
 
-# Show title and description.
-st.title("💬 SAP QM Expert Chatbot")
+# Secure API Key (replace only if necessary)
+API_KEY = "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"
+
+# Set up the app
+st.set_page_config(page_title="SAP QM Expert Chatbot", layout="wide")
+st.title("💬 SAP QM Expert Chatbot v3")
 st.write(
-    "Welcome to the SAP QM Expert Chatbot! This chatbot utilizes OpenAI's GPT model to provide insights related to SAP Quality Management."
+    "This assistant combines OpenAI GPT-4 with real-world SAP QM knowledge from forums and experts.\n\n"
+    "💡 You can upload or paste screenshots from SAP to help the bot assist you.\n"
+    "🛠️ The bot will ask clarifying questions if your request is too broad."
 )
 
-# Ask user for their OpenAI API key via `st.text_input`.
-openai_api_key = st.text_input("OpenAI API Key", type="password")
-if not openai_api_key:
-    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
-else:
-    # Create an OpenAI client.
-    client = OpenAI(api_key=openai_api_key)
+# Initialize OpenAI client
+client = OpenAI(api_key=API_KEY)
 
-    # Create a session state variable to store the chat messages.
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+# Initialize session state for messages
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-    # Display the existing chat messages.
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+# Upload or paste screenshot
+uploaded_image = st.file_uploader("📷 Upload a screenshot from SAP (optional)", type=["png", "jpg", "jpeg"])
 
-    # Create a chat input field for user input.
-    if prompt := st.chat_input("Ask a question about SAP Quality Management:"):
+# Display previous messages
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        if "image" in message:
+            st.image(message["image"], caption="User Screenshot")
+        st.markdown(message["content"])
 
-        # Store and display the user prompt.
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
+# Chat input
+prompt = st.chat_input("Ask a question about SAP Quality Management")
 
-        # Prepare a context-rich prompt for the OpenAI API to generate better responses.
-        enriched_prompt = (
-            "You are an expert in SAP Quality Management (QM). "
-            "Provide comprehensive answers to questions related to quality processes, "
-            "inspection methodologies, quality notifications, quality planning, and integration with other SAP modules. "
-            "User Query: " + prompt
+if prompt or uploaded_image:
+    user_message = {"role": "user", "content": prompt}
+    if uploaded_image:
+        image = Image.open(uploaded_image)
+        user_message["image"] = uploaded_image.getvalue()
+        st.image(image, caption="User Screenshot")
+
+    st.session_state.messages.append(user_message)
+
+    with st.chat_message("user"):
+        if uploaded_image:
+            st.image(image, caption="User Screenshot")
+        st.markdown(prompt or "*Screenshot only*")
+
+    # Enriched system prompt
+    system_prompt = (
+        "You are a senior SAP Quality Management (QM) consultant with access to best practices from SAP Community, SAP Blogs, and SCN. "
+        "Provide detailed, practical instructions, using transaction codes, integration tips, and real-world solutions. "
+        "If the user question lacks details, ask follow-up questions to gather necessary context. "
+        "Use screenshots when provided to validate UI-based issues or guide the user step-by-step. "
+        "Focus on helping them configure, troubleshoot, or verify SAP QM processes with precision."
+    )
+
+    try:
+        messages = [{"role": "system", "content": system_prompt}]
+
+        if uploaded_image:
+            messages.append({
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt or "Please analyze this screenshot."},
+                    {"type": "image_url", "image_url": {"url": "data:image/png;base64," + uploaded_image.getvalue().decode("latin1")}}
+                ]
+            })
+        else:
+            messages.append({"role": "user", "content": prompt})
+
+        response_stream = client.chat.completions.create(
+            model="gpt-4-vision-preview" if uploaded_image else "gpt-4",
+            messages=messages,
+            stream=True,
+            max_tokens=1500
         )
 
-        # Generate a response using the OpenAI API.
-        try:
-            stream = client.chat.completions.create(
-                model="gpt-4",
-                messages=[
-                    {"role": "system", "content": enriched_prompt},
-                    {"role": "user", "content": prompt}
-                ],
-                stream=True,
-            )
+        with st.chat_message("assistant"):
+            response = st.write_stream(response_stream)
+        st.session_state.messages.append({"role": "assistant", "content": response})
 
-            # Stream the response to the chat and append to session state.
-            with st.chat_message("assistant"):
-                response = st.write_stream(stream)
-            st.session_state.messages.append({"role": "assistant", "content": response})
-
-        except Exception as e:
-            st.error("An error occurred while generating the response: " + str(e))
+    except Exception as e:
+        st.error(f"Error: {e}")
