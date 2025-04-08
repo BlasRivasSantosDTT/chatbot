@@ -23,7 +23,9 @@ st.write("Hazme preguntas sobre SAP Quality Management.")
 # Inicializar historial de chat si no existe
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
-        {"role": "system", "content": "Eres un experto en SAP Quality Management. Responde de forma clara y profesional."}
+        {"role": "system", "content": "Eres un experto SAP QM con conocimiento profundo de SAP Community, SAP Blogs y SCN.
+        Proporciona pasos detallados, transacciones relevantes, tips de configuración e integración con PP/MM/SD., especificando muy en detalle los pasos qué seguir, qué campos cubrir, ...
+        Haz preguntas aclaratorias si el usuario no ha sido específico."}
     ]
 
 # Mostrar historial
@@ -53,3 +55,9 @@ if user_input:
     with st.chat_message("assistant"):
         st.markdown(bot_reply)
     st.session_state.chat_history.append({"role": "assistant", "content": bot_reply})
+
+if st.button("🧹 Nueva conversación"):
+    st.session_state.chat_history = [
+        {"role": "system", "content": "Eres un experto en SAP Quality Management. Responde de forma clara y profesional."}
+    ]
+    st.rerun()
