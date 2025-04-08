@@ -7,7 +7,7 @@ import base64
 API_KEY = "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"
 
 st.set_page_config(page_title="SAP QM Expert Chatbot", layout="wide")
-st.title("💬 SAP QM Expert Chatbot v4")
+st.title("💬 SAP QM Expert Chatbot v5")
 st.write(
     "This chatbot uses GPT-4.5 and expert-level SAP QM knowledge from real SAP communities (SCN, SAP Blogs, etc.).\n\n"
     "🔍 Upload screenshots or files if needed. The assistant can analyze visual content to guide your troubleshooting.\n"
@@ -83,7 +83,7 @@ if prompt or uploaded_image or uploaded_file:
                     {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image_base64}"}}
                 ]
             })
-            model = "gpt-4-vision-preview"
+            model = "gpt-4.5-preview"
         else:
             messages.append({"role": "user", "content": prompt})
             model = "gpt-4.5-preview"
