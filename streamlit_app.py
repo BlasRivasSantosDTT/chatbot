@@ -1,14 +1,12 @@
 import streamlit as st
 import os
 from openai import OpenAI
-from dotenv import load_dotenv
 
-load_dotenv()  # 👈 Carga el archivo .env
-
+# Obtén la clave de API de los secretos de Streamlit
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 if not GROQ_API_KEY:
-    st.error("❌ GROQ_API_KEY no está configurada. Asegúrate de definirla.")
+    st.error("❌ GROQ_API_KEY no está configurada. Asegúrate de definirla en los 'Secrets'.")
     st.stop()
 
 client = OpenAI(
