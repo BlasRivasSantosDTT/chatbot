@@ -2,20 +2,23 @@ import streamlit as st
 import os
 from openai import OpenAI
 
-# Cargar API Key de los secretos de Streamlit
+# ─────────────────────────────────────────────
+# 🔐 1. Cargar API Key desde secretos
+# ─────────────────────────────────────────────
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-
 if not GROQ_API_KEY:
     st.error("❌ GROQ_API_KEY no está configurada. Asegúrate de definirla en los 'Secrets'.")
     st.stop()
 
-# Cliente OpenAI apuntando a Groq
+# 🔗 2. Configurar cliente de OpenAI para usar Groq
 client = OpenAI(
     api_key=GROQ_API_KEY,
     base_url="https://api.groq.com/openai/v1"
 )
 
-# Prompt inicial del sistema (lo guardamos como variable)
+# ─────────────────────────────────────────────
+# 🧠 3. Prompt inicial del asistente experto SAP QM
+# ─────────────────────────────────────────────
 initial_system_prompt = {
     "role": "system",
     "content": """Eres un experto SAP QM con conocimiento profundo de SAP Community, SAP Blogs y SCN.
@@ -26,45 +29,54 @@ Incluye ejemplos reales, campos específicos que deben completarse y posibles er
 Haz preguntas aclaratorias si el usuario no ha sido específico."""
 }
 
-# Configuración de la app
+# ─────────────────────────────────────────────
+# 🧼 4. UI y configuración general de la app
+# ─────────────────────────────────────────────
 st.set_page_config(page_title="SAP QM Chatbot", page_icon="🧠")
 st.title("🧠 SAP QM Chatbot (Powered by Groq + LLaMA 3)")
 st.write("Hazme preguntas sobre SAP Quality Management.")
 
-# Botón para reiniciar la conversación
+# 🔁 Botón para reiniciar la conversación
 if st.button("🧹 Nueva conversación"):
     st.session_state.chat_history = [initial_system_prompt]
     st.rerun()
 
-# Inicializar historial de chat si no existe
+# 🗃️ Inicializar historial de chat
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [initial_system_prompt]
 
-# Mostrar historial
+# ─────────────────────────────────────────────
+# 📜 5. Mostrar historial de conversación
+# ─────────────────────────────────────────────
 for msg in st.session_state.chat_history[1:]:  # omitimos el mensaje del system
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# Entrada del usuario
-user_input = st.chat_input("Escribe tu pregunta aquí...")
-uploaded_file = st.file_uploader("📸 Sube una captura de pantalla (opcional)", type=["png", "jpg", "jpeg"])
+# ─────────────────────────────────────────────
+# ✍️ 6. Entrada del usuario + imagen opcional
+# ─────────────────────────────────────────────
+st.write("Puedes acompañar tu pregunta con una captura de pantalla.")
 
-if user_input or uploaded_file:
-    content = user_input if user_input else ""
+with st.form("user_input_form"):
+    user_input = st.text_area("Pregunta:", placeholder="Describe tu duda o situación relacionada con SAP QM...")
+    uploaded_file = st.file_uploader("📸 Sube una imagen si lo deseas:", type=["png", "jpg", "jpeg"])
+    submitted = st.form_submit_button("Enviar")
 
-    if uploaded_file:
-        with st.chat_message("user"):
-            if user_input:
-                st.markdown(user_input)
-            st.image(uploaded_file, caption="Captura subida")
-        content += f"\n[El usuario ha subido una imagen: {uploaded_file.name}]"
-    else:
-        with st.chat_message("user"):
+if submitted and (user_input or uploaded_file):
+    content = user_input.strip() if user_input else ""
+
+    with st.chat_message("user"):
+        if user_input:
             st.markdown(user_input)
+        if uploaded_file:
+            st.image(uploaded_file, caption="Captura subida")
+            content += f"\n[Imagen subida: {uploaded_file.name}]"
 
     st.session_state.chat_history.append({"role": "user", "content": content})
 
-    # Generar respuesta
+# ─────────────────────────────────────────────
+# 🤖 7. Llamada al modelo y respuesta del bot
+# ─────────────────────────────────────────────
     with st.spinner("Pensando..."):
         response = client.chat.completions.create(
             model="llama3-8b-8192",
@@ -73,7 +85,9 @@ if user_input or uploaded_file:
         )
         bot_reply = response.choices[0].message.content
 
-    # Mostrar respuesta del bot
+    # 💬 Mostrar respuesta del bot
     with st.chat_message("assistant"):
         st.markdown(bot_reply)
+
     st.session_state.chat_history.append({"role": "assistant", "content": bot_reply})
+
