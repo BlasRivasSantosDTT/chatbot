@@ -3,7 +3,7 @@ import os
 from openai import OpenAI
 
 # Usa tu clave de API de Groq aquí
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "TU_API_KEY_AQUI")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 client = OpenAI(
     api_key=GROQ_API_KEY,
