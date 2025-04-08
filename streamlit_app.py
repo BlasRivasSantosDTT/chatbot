@@ -1,63 +1,78 @@
 import streamlit as st
 from openai import OpenAI
 from PIL import Image
+import base64
 
-# Secure API Key (replace only if necessary)
+# Hardcoded API key (used securely in production scenarios)
 API_KEY = "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"
 
-# Set up the app
 st.set_page_config(page_title="SAP QM Expert Chatbot", layout="wide")
 st.title("💬 SAP QM Expert Chatbot v3")
 st.write(
-    "This assistant combines OpenAI GPT-4 with real-world SAP QM knowledge from forums and experts.\n\n"
-    "💡 You can upload or paste screenshots from SAP to help the bot assist you.\n"
-    "🛠️ The bot will ask clarifying questions if your request is too broad."
+    "This chatbot uses GPT-4 and expert-level SAP QM knowledge from real SAP communities (SCN, SAP Blogs, etc.).\n\n"
+    "🔍 Upload screenshots or files if needed. The assistant can analyze visual content to guide your troubleshooting.\n"
+    "📌 It will ask you clarifying questions when your input is not specific enough for an accurate response."
 )
 
-# Initialize OpenAI client
+# OpenAI client
 client = OpenAI(api_key=API_KEY)
 
-# Initialize session state for messages
+# Initialize session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Upload or paste screenshot
-uploaded_image = st.file_uploader("📷 Upload a screenshot from SAP (optional)", type=["png", "jpg", "jpeg"])
-
-# Display previous messages
+# Display chat history
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         if "image" in message:
-            st.image(message["image"], caption="User Screenshot")
+            st.image(message["image"], caption="Uploaded Screenshot")
+        if "file_name" in message:
+            st.markdown(f"📎 **File uploaded:** {message['file_name']}")
         st.markdown(message["content"])
 
-# Chat input
+# Inputs
+uploaded_image = st.file_uploader("📷 Upload a screenshot (optional)", type=["png", "jpg", "jpeg"])
+uploaded_file = st.file_uploader("📄 Upload a file (optional)", type=["pdf", "docx", "txt"])
 prompt = st.chat_input("Ask a question about SAP Quality Management")
 
-if prompt or uploaded_image:
-    user_message = {"role": "user", "content": prompt}
+# Process user input
+if prompt or uploaded_image or uploaded_file:
+    user_message = {"role": "user", "content": prompt or "*No text question provided*"}
+
+    # If screenshot uploaded
     if uploaded_image:
-        image = Image.open(uploaded_image)
-        user_message["image"] = uploaded_image.getvalue()
-        st.image(image, caption="User Screenshot")
+        image_bytes = uploaded_image.read()
+        user_message["image"] = image_bytes
+        image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+
+    # If file uploaded
+    if uploaded_file:
+        file_content = uploaded_file.read()
+        file_text = file_content.decode("utf-8", errors="ignore")[:1000]  # show only beginning
+        user_message["file_name"] = uploaded_file.name
+        prompt += f"\n\n(File excerpt for context):\n{file_text}"
 
     st.session_state.messages.append(user_message)
 
     with st.chat_message("user"):
         if uploaded_image:
-            st.image(image, caption="User Screenshot")
+            st.image(image_bytes, caption="User Screenshot")
+        if uploaded_file:
+            st.markdown(f"📎 **File uploaded:** {uploaded_file.name}")
         st.markdown(prompt or "*Screenshot only*")
 
     # Enriched system prompt
     system_prompt = (
-        "You are a senior SAP Quality Management (QM) consultant with access to best practices from SAP Community, SAP Blogs, and SCN. "
-        "Provide detailed, practical instructions, using transaction codes, integration tips, and real-world solutions. "
-        "If the user question lacks details, ask follow-up questions to gather necessary context. "
-        "Use screenshots when provided to validate UI-based issues or guide the user step-by-step. "
-        "Focus on helping them configure, troubleshoot, or verify SAP QM processes with precision."
+        "You are a highly experienced SAP Quality Management (QM) consultant with access to real-world knowledge from SAP Community, SAP Blogs, and SCN. "
+        "When answering, always consider T-Codes, configurations, integrations with PP/MM/SD, inspection lot logic, and notifications. "
+        "Ask clarifying questions if the user's request is too vague or lacks detail. "
+        "If screenshots are included, visually analyze the UI and guide step-by-step. "
+        "If files are uploaded, extract key details and respond accordingly. "
+        "Your goal is to help the user precisely configure, troubleshoot, or verify SAP QM systems."
     )
 
     try:
+        # Compose OpenAI API call
         messages = [{"role": "system", "content": system_prompt}]
 
         if uploaded_image:
@@ -65,14 +80,16 @@ if prompt or uploaded_image:
                 "role": "user",
                 "content": [
                     {"type": "text", "text": prompt or "Please analyze this screenshot."},
-                    {"type": "image_url", "image_url": {"url": "data:image/png;base64," + uploaded_image.getvalue().decode("latin1")}}
+                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image_base64}"}}
                 ]
             })
+            model = "gpt-4-vision-preview"
         else:
             messages.append({"role": "user", "content": prompt})
+            model = "gpt-4"
 
         response_stream = client.chat.completions.create(
-            model="gpt-4-vision-preview" if uploaded_image else "gpt-4",
+            model=model,
             messages=messages,
             stream=True,
             max_tokens=1500
@@ -80,7 +97,8 @@ if prompt or uploaded_image:
 
         with st.chat_message("assistant"):
             response = st.write_stream(response_stream)
+
         st.session_state.messages.append({"role": "assistant", "content": response})
 
     except Exception as e:
-        st.error(f"Error: {e}")
+        st.error(f"❌ Error: {e}")
