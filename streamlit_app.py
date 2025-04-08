@@ -40,12 +40,25 @@ for msg in st.session_state.chat_history[1:]:  # omitimos el mensaje del system
 
 # Entrada del usuario
 user_input = st.chat_input("Escribe tu pregunta aquí...")
+uploaded_file = st.file_uploader("📸 Sube una captura de pantalla (opcional)", type=["png", "jpg", "jpeg"])
 
-if user_input:
-    # Mostrar mensaje del usuario
-    with st.chat_message("user"):
-        st.markdown(user_input)
-    st.session_state.chat_history.append({"role": "user", "content": user_input})
+if user_input or uploaded_file:
+    content = user_input if user_input else ""
+
+    if uploaded_file:
+        # Mostrar imagen en el chat
+        with st.chat_message("user"):
+            if user_input:
+                st.markdown(user_input)
+            st.image(uploaded_file, caption="Captura subida")
+
+        # Puedes incluir un marcador textual en el mensaje
+        content += f"\n[El usuario ha subido una imagen: {uploaded_file.name}]"
+    else:
+        with st.chat_message("user"):
+            st.markdown(user_input)
+
+    st.session_state.chat_history.append({"role": "user", "content": content})
 
     # Generar respuesta
     with st.spinner("Pensando..."):
