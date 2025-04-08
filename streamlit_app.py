@@ -5,8 +5,6 @@ from openai import OpenAI
 st.title("💬 SAP QM Expert Chatbot")
 st.write(
     "Welcome to the SAP QM Expert Chatbot! This chatbot utilizes OpenAI's GPT model to provide insights related to SAP Quality Management."
-    "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
-    "Feel free to ask questions about quality processes, inspections, quality notifications, and more."
 )
 
 # Ask user for their OpenAI API key via `st.text_input`.
