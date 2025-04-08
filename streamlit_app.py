@@ -15,6 +15,16 @@ client = OpenAI(
     base_url="https://api.groq.com/openai/v1"
 )
 
+# Prompt inicial del sistema (lo guardamos como variable)
+initial_system_prompt = {
+    "role": "system",
+    "content": """Eres un experto SAP QM con conocimiento profundo de SAP Community, SAP Blogs y SCN.
+Explica todo con mucho detalle, como si estuvieras guiando a una persona sin experiencia previa en SAP.
+Proporciona pasos detallados, transacciones relevantes, tips de configuración e integración con PP/MM/SD.
+Incluye ejemplos reales, campos específicos que deben completarse y posibles errores comunes.
+Haz preguntas aclaratorias si el usuario no ha sido específico."""
+}
+
 # Configuración de la app
 st.set_page_config(page_title="SAP QM Chatbot", page_icon="🧠")
 st.title("🧠 SAP QM Chatbot (Powered by Groq + LLaMA 3)")
@@ -22,16 +32,12 @@ st.write("Hazme preguntas sobre SAP Quality Management.")
 
 # Botón para reiniciar la conversación
 if st.button("🧹 Nueva conversación"):
-    st.session_state.chat_history = [
-        {"role": "system", "content": """Eres un experto SAP QM con conocimiento profundo de SAP Community, SAP Blogs y SCN. Proporciona pasos detallados, transacciones relevantes, tips de configuración e integración con PP/MM/SD., especificando muy en detalle los pasos qué seguir, qué campos cubrir, ... Haz preguntas aclaratorias si el usuario no ha sido específico."""}
-    ]
+    st.session_state.chat_history = [initial_system_prompt]
     st.rerun()
 
 # Inicializar historial de chat si no existe
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [
-        {"role": "system", "content": """Eres un experto SAP QM con conocimiento profundo de SAP Community, SAP Blogs y SCN. Proporciona pasos detallados, transacciones relevantes, tips de configuración e integración con PP/MM/SD., especificando muy en detalle los pasos qué seguir, qué campos cubrir, ... Haz preguntas aclaratorias si el usuario no ha sido específico."""}
-    ]
+    st.session_state.chat_history = [initial_system_prompt]
 
 # Mostrar historial
 for msg in st.session_state.chat_history[1:]:  # omitimos el mensaje del system
@@ -46,13 +52,10 @@ if user_input or uploaded_file:
     content = user_input if user_input else ""
 
     if uploaded_file:
-        # Mostrar imagen en el chat
         with st.chat_message("user"):
             if user_input:
                 st.markdown(user_input)
             st.image(uploaded_file, caption="Captura subida")
-
-        # Puedes incluir un marcador textual en el mensaje
         content += f"\n[El usuario ha subido una imagen: {uploaded_file.name}]"
     else:
         with st.chat_message("user"):
