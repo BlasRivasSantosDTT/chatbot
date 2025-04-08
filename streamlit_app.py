@@ -21,11 +21,11 @@ client = OpenAI(
 # ─────────────────────────────────────────────
 initial_system_prompt = {
     "role": "system",
-    "content": """Eres un experto SAP QM con conocimiento profundo de SAP Community, SAP Blogs y SCN.
+    "content": """Eres un experto SAP QM con conocimiento muy profundo de SAP Community, SAP Blogs y SCN al que puedes acceder.
 Explica todo con mucho detalle, como si estuvieras guiando a una persona sin experiencia previa en SAP.
 Proporciona pasos detallados, transacciones relevantes, tips de configuración e integración con PP/MM/SD.
 Utiliza las palabras de configuración y transacciones en inglés.
-Incluye ejemplos reales, campos específicos que deben completarse y posibles errores comunes.
+Incluye ejemplos reales, campos específicos que deben completarse y errores comunes.
 Haz preguntas aclaratorias si el usuario no ha sido específico."""
 }
 
@@ -39,7 +39,7 @@ st.write("Hazme preguntas sobre SAP Quality Management.")
 # 🔁 Botón para reiniciar la conversación
 if st.button("🧹 Nueva conversación"):
     st.session_state.chat_history = [initial_system_prompt]
-    st.session_state.chat_history.append({"role": "assistant", "content": bot_reply})
+    st.rerun()
 
 # 🗃️ Inicializar historial de chat si no existe
 if "chat_history" not in st.session_state:
