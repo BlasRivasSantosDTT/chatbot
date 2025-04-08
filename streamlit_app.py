@@ -39,7 +39,7 @@ st.write("Hazme preguntas sobre SAP Quality Management.")
 # 🔁 Botón para reiniciar la conversación
 if st.button("🧹 Nueva conversación"):
     st.session_state.chat_history = [initial_system_prompt]
-    st.rerun()
+    st.experimental_rerun()
 
 # 🗃️ Inicializar historial de chat si no existe
 if "chat_history" not in st.session_state:
@@ -62,17 +62,19 @@ with st.form("user_input_form"):
     uploaded_file = st.file_uploader("📸 Sube una imagen si lo deseas:", type=["png", "jpg", "jpeg"])
     submitted = st.form_submit_button("Enviar")
 
+# Si el formulario se envía
 if submitted:
     content = user_input.strip() if user_input else ""
 
+    # Mostrar mensaje del usuario en el chat
     with st.chat_message("user"):
         if user_input:
-            st.markdown(user_input)
+            st.markdown(user_input)  # Mostrar texto
         if uploaded_file:
-            st.image(uploaded_file, caption="Captura subida")
+            st.image(uploaded_file, caption="Captura subida")  # Mostrar la imagen
             content += f"\n[Imagen subida: {uploaded_file.name}]"
 
-    # Añadir el contenido al historial
+    # Actualizar historial de la conversación
     st.session_state.chat_history.append({"role": "user", "content": content})
 
     # ─────────────────────────────────────────────
