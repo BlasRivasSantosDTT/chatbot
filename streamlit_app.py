@@ -9,7 +9,7 @@ API_KEY = "sk-proj-BsSrg11HccmcXxp4gkUKpS1ETO6yMBHLfL9EevQkZf5LHst-NNHyvpF5IPseq
 st.set_page_config(page_title="SAP QM Expert Chatbot", layout="wide")
 st.title("💬 SAP QM Expert Chatbot v4")
 st.write(
-    "This chatbot uses GPT-4 and expert-level SAP QM knowledge from real SAP communities (SCN, SAP Blogs, etc.).\n\n"
+    "This chatbot uses GPT-4.5 and expert-level SAP QM knowledge from real SAP communities (SCN, SAP Blogs, etc.).\n\n"
     "🔍 Upload screenshots or files if needed. The assistant can analyze visual content to guide your troubleshooting.\n"
     "📌 It will ask you clarifying questions when your input is not specific enough for an accurate response."
 )
@@ -86,7 +86,7 @@ if prompt or uploaded_image or uploaded_file:
             model = "gpt-4-vision-preview"
         else:
             messages.append({"role": "user", "content": prompt})
-            model = "gpt-4"
+            model = "gpt-4.5-preview"
 
         response_stream = client.chat.completions.create(
             model=model,
