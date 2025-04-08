@@ -23,14 +23,14 @@ st.write("Hazme preguntas sobre SAP Quality Management.")
 # Botón para reiniciar la conversación
 if st.button("🧹 Nueva conversación"):
     st.session_state.chat_history = [
-        {"role": "system", "content": "Eres un experto SAP QM con conocimiento profundo de SAP Community, SAP Blogs y SCN. Proporciona pasos detallados, transacciones relevantes, tips de configuración e integración con PP/MM/SD., especificando muy en detalle los pasos qué seguir, qué campos cubrir, ... Haz preguntas aclaratorias si el usuario no ha sido específico."}
+        {"role": "system", "content": """Eres un experto SAP QM con conocimiento profundo de SAP Community, SAP Blogs y SCN. Proporciona pasos detallados, transacciones relevantes, tips de configuración e integración con PP/MM/SD., especificando muy en detalle los pasos qué seguir, qué campos cubrir, ... Haz preguntas aclaratorias si el usuario no ha sido específico."""}
     ]
     st.rerun()
 
 # Inicializar historial de chat si no existe
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
-        {"role": "system", "content": "Eres un experto SAP QM con conocimiento profundo de SAP Community, SAP Blogs y SCN. Proporciona pasos detallados, transacciones relevantes, tips de configuración e integración con PP/MM/SD., especificando muy en detalle los pasos qué seguir, qué campos cubrir, ... Haz preguntas aclaratorias si el usuario no ha sido específico."}
+        {"role": "system", "content": """Eres un experto SAP QM con conocimiento profundo de SAP Community, SAP Blogs y SCN. Proporciona pasos detallados, transacciones relevantes, tips de configuración e integración con PP/MM/SD., especificando muy en detalle los pasos qué seguir, qué campos cubrir, ... Haz preguntas aclaratorias si el usuario no ha sido específico."""}
     ]
 
 # Mostrar historial
