@@ -25,7 +25,7 @@ user_input = st.text_input("Pregunta:")
 if user_input:
     with st.spinner("Pensando..."):
         response = client.chat.completions.create(
-            model="mistral-7b-8k",
+            model="llama-3.1-8b-instant",
             messages=[
                 {"role": "system", "content": "Eres un experto en SAP Quality Management. Responde de forma clara y profesional."},
                 {"role": "user", "content": user_input}
