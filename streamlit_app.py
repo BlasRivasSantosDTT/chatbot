@@ -39,7 +39,7 @@ st.write("Hazme preguntas sobre SAP Quality Management.")
 # 🔁 Botón para reiniciar la conversación
 if st.button("🧹 Nueva conversación"):
     st.session_state.chat_history = [initial_system_prompt]
-    st.experimental_rerun()
+    st.session_state.chat_history.append({"role": "assistant", "content": bot_reply})
 
 # 🗃️ Inicializar historial de chat si no existe
 if "chat_history" not in st.session_state:
