@@ -41,7 +41,7 @@ if st.button("🧹 Nueva conversación"):
     st.session_state.chat_history = [initial_system_prompt]
     st.rerun()
 
-# 🗃️ Inicializar historial de chat
+# 🗃️ Inicializar historial de chat si no existe
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [initial_system_prompt]
 
@@ -62,7 +62,7 @@ with st.form("user_input_form"):
     uploaded_file = st.file_uploader("📸 Sube una imagen si lo deseas:", type=["png", "jpg", "jpeg"])
     submitted = st.form_submit_button("Enviar")
 
-if submitted and (user_input or uploaded_file):
+if submitted:
     content = user_input.strip() if user_input else ""
 
     with st.chat_message("user"):
@@ -72,11 +72,12 @@ if submitted and (user_input or uploaded_file):
             st.image(uploaded_file, caption="Captura subida")
             content += f"\n[Imagen subida: {uploaded_file.name}]"
 
+    # Añadir el contenido al historial
     st.session_state.chat_history.append({"role": "user", "content": content})
 
-# ─────────────────────────────────────────────
-# 🤖 7. Llamada al modelo y respuesta del bot
-# ─────────────────────────────────────────────
+    # ─────────────────────────────────────────────
+    # 🤖 7. Llamada al modelo y respuesta del bot
+    # ─────────────────────────────────────────────
     with st.spinner("Pensando..."):
         response = client.chat.completions.create(
             model="llama3-8b-8192",
@@ -89,5 +90,5 @@ if submitted and (user_input or uploaded_file):
     with st.chat_message("assistant"):
         st.markdown(bot_reply)
 
+    # Añadir la respuesta del bot al historial
     st.session_state.chat_history.append({"role": "assistant", "content": bot_reply})
-
