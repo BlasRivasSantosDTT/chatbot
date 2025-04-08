@@ -51,4 +51,4 @@ if user_input:
     st.session_state.chat_history.append({"role": "assistant", "content": bot_reply})
 
     # Limpiar campo de texto
-    st.experimental_rerun()
+    st.rerun()
