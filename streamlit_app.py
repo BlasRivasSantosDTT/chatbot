@@ -4,7 +4,7 @@ from PIL import Image
 import base64
 
 # Hardcoded API key (used securely in production scenarios)
-API_KEY = "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"
+API_KEY = "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"
 
 st.set_page_config(page_title="SAP QM Expert Chatbot", layout="wide")
 st.title("💬 SAP QM Expert Chatbot v4")
